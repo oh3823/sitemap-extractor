@@ -1,0 +1,50 @@
+name: Build Sitemap Extractor
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: read base version
+        id: version
+        run: |
+          BASE=$(cat VERSION)
+          echo "version=${BASE}.${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: build executable
+        run: pyinstaller --onefile sitemap_extractor.py
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sitemap-extractor-${{ matrix.os }}
+          path: dist/*
