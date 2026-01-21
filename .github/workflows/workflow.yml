@@ -16,17 +16,6 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
-      - name: read base version
-        id: version
-        run: |
-          BASE=$(cat VERSION)
-          echo "version=${BASE}.${{ github.run_number }}" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ steps.version.outputs.version }}
-
       - name: checkout
         uses: actions/checkout@v4
 
@@ -48,3 +37,31 @@ jobs:
         with:
           name: sitemap-extractor-${{ matrix.os }}
           path: dist/*
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: read base version
+        id: version
+        run: |
+          BASE=$(cat VERSION)
+          echo "version=${BASE}.${{ github.run_number }}" >> $GITHUB_OUTPUT
+
+      - name: download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: create release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          files: artifacts/**/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
