@@ -32,6 +32,15 @@ jobs:
       - name: build executable
         run: pyinstaller --onefile sitemap_extractor.py
 
+      - name: rename executable
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" == "Windows" ]; then
+            mv dist/sitemap_extractor.exe dist/sitemap_extractor_windows.exe
+          else
+            mv dist/sitemap_extractor dist/sitemap_extractor_linux
+          fi
+
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
