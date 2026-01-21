@@ -46,10 +46,20 @@ def extract_urls_with_proxy(input_target):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("usage: sitemap_extractor <url or domain>")
-        print("  ex > sitemap_extractor https://www.example.com")
-        print("  ex > sitemap_extractor example.com")
-        sys.exit(1)
+    try:
+        if len(sys.argv) >= 2:
+            target = sys.argv[1]
+        else:
+            print("usage: sitemap_extractor <url or domain>")
+            print("  ex > sitemap_extractor https://www.example.com")
+            print("  ex > sitemap_extractor example.com")
+            print()
+            target = input("Enter domain or URL: ").strip()
+            if not target:
+                print("No input provided. Exiting.")
+                input("Press Enter to exit...")
+                sys.exit(1)
 
-    extract_urls_with_proxy(sys.argv[1])
+        extract_urls_with_proxy(target)
+    finally:
+        input("\nPress Enter to exit...")
